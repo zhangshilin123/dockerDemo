@@ -39,5 +39,9 @@ public class DockerDemo {
         return  mybatiusPlusTestPage.getRecords();
     }
 
+    @GetMapping("/getData's")
+    public MybatiusPlusTest getDataList1(@RequestParam Integer id){
+        return mapper.selectById(id);
+    }
 
 }
