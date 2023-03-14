@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import jdk.jfr.TransitionFrom;
 import lombok.Data;
 
 import java.util.Date;
@@ -28,6 +29,7 @@ public class MybatiusPlusTest {
     private Date updateTime;
 
     @TableField("create_by")
+    @TransitionFrom
     private String createBy;
 
 }
