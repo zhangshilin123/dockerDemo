@@ -29,6 +29,8 @@ public class DockerDemo {
     @GetMapping("/getData")
     public MybatiusPlusTest getData(@RequestParam Integer id){
        return mapper.selectById(id);
+
+
     }
 
     @GetMapping("/getDataPage")
