@@ -1,7 +1,0 @@
-<root>
-    <item name='reactor.core.publisher.Flux reactor.core.publisher.Flux&lt;T&gt; push(java.util.function.Consumer&lt;? super reactor.core.publisher.FluxSink&lt;T&gt;&gt;)'>
-        <annotation name='org.jetbrains.annotations.Contract'>
-            <val name="pure" val="true"/>
-        </annotation>
-    </item>
-</root>

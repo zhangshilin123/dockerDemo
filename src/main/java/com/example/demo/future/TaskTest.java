@@ -1,9 +1,10 @@
-package com.xu.thread;
+package com.example.demo.future;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.demo.entry.MybatiusPlusTest;
 import com.example.demo.mapper.MybatisPlusTestMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
@@ -11,6 +12,7 @@ import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@Slf4j
 public class TaskTest {
 
     @Autowired
@@ -25,11 +27,12 @@ public class TaskTest {
             Executors.defaultThreadFactory(),// 线程创建工厂
             new ThreadPoolExecutor.AbortPolicy());// 拒绝策略
 
-    private final AtomicInteger atomic = new AtomicInteger();
+    private static final AtomicInteger atomic = new AtomicInteger();
 
     public static void main(String[] args) throws Exception {
         TaskTest test = new TaskTest();
         List<MybatiusPlusTest> allResult = test.run().get();
+        log.error("执行的线程个数为：{}", atomic.get());
         //TODO allResult进行 修改
         executor.shutdown();
     }
@@ -55,6 +58,7 @@ public class TaskTest {
         return CompletableFuture.supplyAsync(() -> {
             // TODO:任务
             Page<MybatiusPlusTest> mybatiusPlusTestPage = mapper.selectPage(new Page<>(i, 2), new QueryWrapper<>());
+            atomic.addAndGet(1);
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {

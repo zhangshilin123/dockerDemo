@@ -1,103 +1,93 @@
-//package com.example.demo;
-//
-//import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-//import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-//import com.example.demo.entry.MybatiusPlusTest;
-//import com.example.demo.mapper.MybatisPlusTestMapper;
-//import lombok.Data;
-//import lombok.extern.slf4j.Slf4j;
-//import org.assertj.core.util.Lists;
-//import org.junit.Test;
-//import org.reactivestreams.Subscription;
-//import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.boot.test.context.SpringBootTest;
-//import reactor.core.Exceptions;
-//import reactor.core.publisher.BaseSubscriber;
-//import reactor.core.publisher.Flux;
-//import reactor.core.publisher.Mono;
-//import reactor.core.publisher.SignalType;
-//import reactor.core.scheduler.Schedulers;
-//
-//import java.time.Duration;
-//import java.util.ArrayList;
-//import java.util.Arrays;
-//import java.util.Collection;
-//import java.util.List;
-//import java.util.concurrent.*;
-//import java.util.concurrent.atomic.AtomicBoolean;
-//import java.util.concurrent.atomic.AtomicLong;
-//import java.util.concurrent.atomic.LongAdder;
-//import java.util.concurrent.locks.ReentrantReadWriteLock;
-//import java.util.stream.Collectors;
-//import java.util.stream.Stream;
-//
-//@SpringBootTest
-//@Slf4j
-//class DemoApplicationTests {
-//
-//    @Autowired
-//    private MybatisPlusTestMapper mapper;
-//
-//    ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-//    ReentrantReadWriteLock.ReadLock readLock = lock.readLock();
-//    ReentrantReadWriteLock.WriteLock writeLock = lock.writeLock();
-//
-//    private static final ThreadPoolExecutor executor = new ThreadPoolExecutor(10,// 核心线程池大小
-//            20,// 最大线程池大小
-//            10,// 线程最大空闲时间
-//            TimeUnit.MILLISECONDS,// 时间单位
-//            new ArrayBlockingQueue<>(1000),// 线程等待队列
-//            Executors.defaultThreadFactory(),// 线程创建工厂
-//            new ThreadPoolExecutor.AbortPolicy());// 拒绝策略
-//
-//    @Test
-//    public void test() throws ExecutionException, InterruptedException {
-//        List<MybatiusPlusTest> allResult = run().get();
-//        log.error("全部的数据：{}", allResult);
-//        //TODO 或者一整个批次进行修改
-//        executor.shutdown();
-//
-//    }
-//
-//    public CompletableFuture<List<MybatiusPlusTest>> run() {
-//        List<CompletableFuture<List<MybatiusPlusTest>>> future = new ArrayList<>();
-//        for (int i = 1; i < 11; i++) {
-//            future.add(task(i));
-//        }
-//
-//        return CompletableFuture.supplyAsync(() -> {
-//            List<MybatiusPlusTest> list = new ArrayList<>();
-//            future.stream().parallel().forEach(task1 -> {
-//                list.addAll(task1.join());
-//            });
-//            return list;
-//        });
-//    }
-//
-//    public CompletableFuture<List<MybatiusPlusTest>> task(Integer i) {
-//        return CompletableFuture.supplyAsync(() -> {
-//            // TODO:任务
-//            List<MybatiusPlusTest> records;
-//            try {
-//                // 读锁
-//                readLock.lock();
-//                Page<MybatiusPlusTest> mybatiusPlusTestPage = mapper.selectPage(new Page<>(i, 2), new QueryWrapper<>());
-//                records = mybatiusPlusTestPage.getRecords();
-//            } finally {
-//                readLock.unlock();
-//            }
-//            try {
-//                writeLock.lock();
-//                records.forEach(t -> t.setMybatisPlus("6666"));
-//                records.forEach(mapper::updateById);
-//            } finally {
-//                writeLock.unlock();
-//            }
-//            return new ArrayList<MybatiusPlusTest>() {{
-//                addAll(records);
-//            }};
-//        }, executor);
-//    }
+package com.example.demo;
+
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.example.demo.entry.MybatiusPlusTest;
+import com.example.demo.mapper.MybatisPlusTestMapper;
+import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+@SpringBootTest
+@Slf4j
+@EnableTransactionManagement
+public class DemoApplicationTests {
+
+    @Autowired
+    private MybatisPlusTestMapper mapper;
+
+    ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+    ReentrantReadWriteLock.ReadLock readLock = lock.readLock();
+    ReentrantReadWriteLock.WriteLock writeLock = lock.writeLock();
+    AtomicInteger atomicInteger = new AtomicInteger();
+
+    private static final ThreadPoolExecutor executor = new ThreadPoolExecutor(10,// 核心线程池大小
+            20,// 最大线程池大小
+            10,// 线程最大空闲时间
+            TimeUnit.MILLISECONDS,// 时间单位
+            new ArrayBlockingQueue<>(1000),// 线程等待队列
+            Executors.defaultThreadFactory(),// 线程创建工厂
+            new ThreadPoolExecutor.AbortPolicy());// 拒绝策略
+
+
+    @Test
+    public void test() throws ExecutionException, InterruptedException {
+         List<MybatiusPlusTest> allResult = run().get();
+        log.error("全部的数据：{}", allResult);
+        log.error("总共的执行线程个数为：{}",atomicInteger.get());
+        //TODO 或者一整个批次进行修改
+        executor.shutdown();
+    }
+
+    public CompletableFuture<List<MybatiusPlusTest>> run() {
+        List<CompletableFuture<List<MybatiusPlusTest>>> future = new ArrayList<>();
+        for (int i = 1; i < 10; i++) {
+            future.add(task(i));
+        }
+
+        return CompletableFuture.supplyAsync(() -> {
+            List<MybatiusPlusTest> list = new ArrayList<>();
+            future.stream().parallel().forEach(task1 -> {
+                list.addAll(task1.join());
+            });
+            return list;
+        });
+    }
+
+    public CompletableFuture<List<MybatiusPlusTest>> task(Integer i) {
+        return CompletableFuture.supplyAsync(() -> {
+            atomicInteger.addAndGet(1);
+            // TODO:任务
+            List<MybatiusPlusTest> records;
+            try {
+                // 读锁
+                readLock.lock();
+                log.error(Thread.currentThread().getName()+"线程个数是");
+                Page<MybatiusPlusTest> mybatiusPlusTestPage = mapper.selectPage(new Page<>(i, 2), new QueryWrapper<>());
+                records = mybatiusPlusTestPage.getRecords();
+            } finally {
+                readLock.unlock();
+            }
+            try {
+                writeLock.lock();
+                records.forEach(t -> t.setMybatisPlus("6666"));
+                records.forEach(mapper::updateById);
+            } finally {
+                writeLock.unlock();
+            }
+            return new ArrayList<MybatiusPlusTest>() {{
+                addAll(records);
+            }};
+        }, executor);
+    }
 //
 //
 //    @Test
@@ -763,5 +753,5 @@
 //        System.out.println(value);
 //        request(1);
 //    }
-//}
-//
+}
+

@@ -4,14 +4,14 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import jdk.jfr.TransitionFrom;
 import lombok.Data;
 
+import java.io.Serializable;
 import java.util.Date;
 
 @TableName(value = "mybatis_plus_test")
 @Data
-public class MybatiusPlusTest {
+public class MybatiusPlusTest implements Serializable {
 
     /**
      * 主键
@@ -29,7 +29,6 @@ public class MybatiusPlusTest {
     private Date updateTime;
 
     @TableField("create_by")
-    @TransitionFrom
     private String createBy;
 
 }
